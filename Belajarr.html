@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viesco47 - Tebak Gambar</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #141e30, #243b55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: white;
+}
+
+.game {
+    width: 100%;
+    max-width: 600px;
+    background: rgba(255,255,255,0.10);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 25px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+}
+
+h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #cfd8dc;
+    margin-bottom: 20px;
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.info-box {
+    flex: 1;
+    padding: 12px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+#score {
+    color: #ffd54f;
+}
+
+#lives {
+    color: #ff5252;
+}
+
+.image-box {
+    height: 300px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.15);
+    transition: 0.4s;
+}
+
+.picture {
+    font-size: 150px;
+    user-select: none;
+    transition: 0.5s;
+}
+
+.blurred {
+    filter: blur(18px);
+    transform: scale(1.1);
+}
+
+.question {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    outline: none;
+    border-radius: 12px;
+    font-size: 17px;
+    text-align: center;
+    margin-bottom: 12px;
+    background: white;
+    color: #222;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+#answerBtn {
+    background: linear-gradient(135deg, #00c853, #64dd17);
+    color: white;
+}
+
+#answerBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 20px rgba(0,200,83,0.4);
+}
+
+#restartBtn {
+    display: none;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #ff6d00, #ff1744);
+    color: white;
+}
+
+.message {
+    min-height: 30px;
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.correct {
+    color: #69f0ae;
+}
+
+.wrong {
+    color: #ff5252;
+}
+
+.progress {
+    margin-top: 15px;
+    color: #b0bec5;
+    font-size: 14px;
+}
+
+@media (max-width: 500px) {
+    h1 {
+        font-size: 26px;
+    }
+
+    .image-box {
+        height: 240px;
+    }
+
+    .picture {
+        font-size: 120px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <h1>🎯 Tebak Gambar</h1>
+    <p class="subtitle">Tebak gambar sebanyak mungkin!</p>
+
+    <div class="info">
+        <div class="info-box">
+            ⭐ Skor<br>
+            <span id="score">0</span>
+        </div>
+
+        <div class="info-box">
+            ❤️ Nyawa<br>
+            <span id="lives">❤️❤️❤️</span>
+        </div>
+    </div>
+
+    <div class="image-box" id="imageBox">
+        <div class="picture" id="picture">🍎</div>
+    </div>
+
+    <div class="question">
+        🤔 Gambar apakah ini?
+    </div>
+
+    <input
+        type="text"
+        id="answer"
+        placeholder="Ketik jawaban..."
+        autocomplete="off"
+    >
+
+    <button id="answerBtn" onclick="checkAnswer()">
+        ✅ Jawab
+    </button>
+
+    <button id="restartBtn" onclick="restartGame()">
+        🔄 Main Lagi
+    </button>
+
+    <div class="message" id="message"></div>
+
+    <div class="progress">
+        Soal <span id="number">1</span> dari 15
+    </div>
+
+</div>
+
+<script>
+
+const questions = [
+    { image: "🍎", answer: "apel" },
+    { image: "🍌", answer: "pisang" },
+    { image: "🍉", answer: "semangka" },
+    { image: "🍕", answer: "pizza" },
+    { image: "🍔", answer: "burger" },
+    { image: "🚗", answer: "mobil" },
+    { image: "🚲", answer: "sepeda" },
+    { image: "✈️", answer: "pesawat" },
+    { image: "🐱", answer: "kucing" },
+    { image: "🐶", answer: "anjing" },
+    { image: "🐘", answer: "gajah" },
+    { image: "🦁", answer: "singa" },
+    { image: "⚽", answer: "bola" },
+    { image: "🎸", answer: "gitar" },
+    { image: "📱", answer: "hp" }
+];
+
+let currentQuestion = 0;
+let score = 0;
+let lives = 3;
+let gameOver = false;
+
+const picture = document.getElementById("picture");
+const answer = document.getElementById("answer");
+const scoreText = document.getElementById("score");
+const livesText = document.getElementById("lives");
+const message = document.getElementById("message");
+const number = document.getElementById("number");
+const imageBox = document.getElementById("imageBox");
+const answerBtn = document.getElementById("answerBtn");
+const restartBtn = document.getElementById("restartBtn");
+
+function loadQuestion() {
+
+    if (currentQuestion >= questions.length) {
+        finishGame();
+        return;
+    }
+
+    picture.textContent = questions[currentQuestion].image;
+    picture.classList.remove("blurred");
+
+    answer.value = "";
+    number.textContent = currentQuestion + 1;
+
+    message.textContent = "";
+    message.className = "message";
+
+    answer.focus();
+}
+
+function updateLives() {
+
+    livesText.textContent =
+        "❤️".repeat(lives) +
+        "🖤".repeat(3 - lives);
+}
+
+function checkAnswer() {
+
+    if (gameOver) return;
+
+    const userAnswer =
+        answer.value.trim().toLowerCase();
+
+    if (userAnswer === "") {
+        message.textContent = "⚠️ Masukkan jawaban terlebih dahulu!";
+        message.className = "message wrong";
+        return;
+    }
+
+    const correctAnswer =
+        questions[currentQuestion].answer;
+
+    if (userAnswer === correctAnswer) {
+
+        score += 10;
+        scoreText.textContent = score;
+
+        message.textContent =
+            "🎉 BENAR! +10 poin";
+
+        message.className = "message correct";
+
+        currentQuestion++;
+
+        setTimeout(() => {
+            loadQuestion();
+        }, 900);
+
+    } else {
+
+        lives--;
+        updateLives();
+
+        message.textContent =
+            "❌ Salah! Coba lagi.";
+
+        message.className = "message wrong";
+
+        if (lives <= 0) {
+            gameOver = true;
+            gameOverScreen();
+        }
+    }
+}
+
+function gameOverScreen() {
+
+    score = 0;
+    scoreText.textContent = score;
+
+    picture.classList.add("blurred");
+
+    message.innerHTML =
+        "💀 GAME OVER!<br>" +
+        "Nyawa kamu habis.<br>" +
+        "Skor telah di-reset menjadi 0.";
+
+    message.className = "message wrong";
+
+    answer.disabled = true;
+    answerBtn.style.display = "none";
+    restartBtn.style.display = "block";
+}
+
+function finishGame() {
+
+    gameOver = true;
+
+    picture.classList.remove("blurred");
+
+    message.innerHTML =
+        "🏆 SELAMAT! Semua gambar berhasil ditebak!<br>" +
+        "Skor akhir: " + score;
+
+    message.className = "message correct";
+
+    answer.disabled = true;
+    answerBtn.style.display = "none";
+    restartBtn.style.display = "block";
+}
+
+function restartGame() {
+
+    currentQuestion = 0;
+    score = 0;
+    lives = 3;
+    gameOver = false;
+
+    scoreText.textContent = score;
+
+    updateLives();
+
+    answer.disabled = false;
+    answerBtn.style.display = "block";
+    restartBtn.style.display = "none";
+
+    loadQuestion();
+}
+
+answer.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+        checkAnswer();
+    }
+
+});
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
